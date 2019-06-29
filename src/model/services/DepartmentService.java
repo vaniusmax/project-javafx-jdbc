@@ -15,8 +15,14 @@ public class DepartmentService {
 		return dao.findAll();
 	}
 	
-	public void insertDepartment(Department dep) {
-		dao.insert(dep);
+	public void saveOrUpdate(Department dep) {
+		
+		if(dep.getId() == null) {
+			dao.insert(dep);
+		} else {
+			dao.update(dep);
+		}
+		
 	}
 
 }

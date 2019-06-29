@@ -3,13 +3,19 @@ package gui;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import db.DBException;
+import gui.util.Alerts;
 import gui.util.Constraints;
+import gui.util.Utils;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Alert.AlertType;
 import model.entities.Department;
+import model.services.DepartmentService;
 
 public class DepartmentFormController implements Initializable {
 
@@ -29,19 +35,49 @@ public class DepartmentFormController implements Initializable {
 	private Label lblError;
 
 	private Department department;
+	
+	private DepartmentService service;
 
 	public void setDepartment(Department department) {
 		this.department = department;
 	}
-
-	@FXML
-	public void onBtnSaveAction() {
-		System.out.println("onBtnSaveAction");
+	
+	public void setDepartmentService(DepartmentService service) {
+		this.service = service;
 	}
 
 	@FXML
-	public void onBtnCancelAction() {
-		System.out.println("onBtnCancelAction");
+	public void onBtnSaveAction(ActionEvent event) {
+		
+		if(department == null) {
+			throw new IllegalStateException("Department was null");
+		}
+		if(service == null) {
+			throw new IllegalStateException("service was null");
+		}
+		try {
+			department = getFormData();
+			service.saveOrUpdate(department);	
+			Utils.currentStage(event).close();
+		} catch (DBException e) {
+			Alerts.showAlert("Error", "Error to save or update", e.getMessage(), AlertType.ERROR	);
+		}
+		
+	}
+
+	private Department getFormData() {
+		
+		Department dep = new Department();
+		
+		dep.setId(Utils.tryParseToInt(txtFieldId.getText()));
+		dep.setName(txtFieldName.getText());
+		
+		return dep;
+	}
+
+	@FXML
+	public void onBtnCancelAction(ActionEvent event) {
+		Utils.currentStage(event).close();
 	}
 
 	@Override
@@ -63,7 +99,7 @@ public class DepartmentFormController implements Initializable {
 		
 		txtFieldId.setText(String.valueOf(department.getId()));
 		txtFieldName.setText(department.getName());
-
+        
 	}
 
 }

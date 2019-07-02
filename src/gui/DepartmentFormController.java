@@ -1,19 +1,22 @@
 package gui;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import db.DBException;
+import gui.listeners.DataChangeListener;
 import gui.util.Alerts;
 import gui.util.Constraints;
 import gui.util.Utils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Alert.AlertType;
 import model.entities.Department;
 import model.services.DepartmentService;
 
@@ -33,6 +36,8 @@ public class DepartmentFormController implements Initializable {
 
 	@FXML
 	private Label lblError;
+	
+	private List<DataChangeListener> dataChangeListeners = new ArrayList<>();
 
 	private Department department;
 	
@@ -58,10 +63,24 @@ public class DepartmentFormController implements Initializable {
 		try {
 			department = getFormData();
 			service.saveOrUpdate(department);	
+			notifyDataChangeListeners();
 			Utils.currentStage(event).close();
 		} catch (DBException e) {
 			Alerts.showAlert("Error", "Error to save or update", e.getMessage(), AlertType.ERROR	);
 		}
+		
+	}
+	
+	private void notifyDataChangeListeners() {
+		for(DataChangeListener listener: dataChangeListeners) {
+			listener.onDataChanged();
+		}
+		
+	}
+
+	public void subscribeDataChangeListener(DataChangeListener listener) {
+		
+		dataChangeListeners.add(listener);
 		
 	}
 
